@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>預金クエスト</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="預金クエスト">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+  :root{
+    --bg-app: #F5F1E8;
+    --bg-outer: #E9E4D8;
+    --text-primary: #2B2A26;
+    --text-secondary: #8A8375;
+    --text-muted: #B3AC9C;
+    --accent: #47614F;
+    --accent-soft: #DEE7DC;
+    --accent-text: #33473C;
+    --border: #E3DDCC;
+    --white: #FFFFFF;
+    --heat-0: #EAE5D6;
+    --heat-1: #CBDCC4;
+    --heat-2: #9FC492;
+    --heat-3: #6EA25F;
+    --heat-4: #487A3C;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg-outer);
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-primary);
+  }
+  .stage { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
+  .phone {
+    width: 390px; max-width: 100%; height: 820px;
+    background: var(--bg-app); border-radius: 36px;
+    box-shadow: 0 24px 60px rgba(30,28,20,0.18);
+    overflow: hidden; position: relative; display: flex; flex-direction: column;
+  }
+  .scroll { flex: 1; overflow-y: auto; padding: 26px 22px 30px; }
+  .brand-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+  .brand-name { font-size: 14px; font-weight: 600; }
+  .brand-tagline { font-size: 11px; color: var(--text-muted); }
+
+  .hero { background: var(--white); border: 0.5px solid var(--border); border-radius: 18px; padding: 20px 18px; margin-bottom: 18px; }
+  .hero-context { font-size: 13px; color: var(--text-secondary); text-align: center; margin-bottom: 14px; line-height: 1.6; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .tab { flex: 1; text-align: center; padding: 8px; border-radius: 10px; font-size: 13px; border: 0.5px solid var(--border); background: transparent; color: var(--text-secondary); font-family: inherit; cursor: pointer; }
+  .tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+
+  .amount-big { font-size: 30px; font-weight: 600; text-align: center; margin-bottom: 6px; }
+  .slider-row { padding: 0 2px; margin-bottom: 12px; }
+  input[type=range] { width: 100%; accent-color: #47614F; }
+  .quick-chips { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .chip { border: 0.5px solid var(--border); background: var(--white); color: var(--text-primary); border-radius: 20px; padding: 7px 13px; font-size: 12.5px; font-family: inherit; cursor: pointer; }
+  .chip.selected { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+  .tag-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; }
+  .tag-row .chip { flex: none; }
+
+  .preview-line { font-size: 13.5px; color: var(--accent-text); text-align: center; min-height: 20px; margin-bottom: 16px; line-height: 1.6; }
+  .hero-cta { width: 100%; }
+  .hero-footer { font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 14px; }
+
+  .done-wrap { text-align: center; padding: 6px 0; }
+  .done-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .done-sub { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 14px; }
+  .more-link { font-size: 12.5px; color: var(--accent-text); background: none; border: none; font-family: inherit; cursor: pointer; text-decoration: underline; }
+
+  .custom-input { width: 100%; border: 0.5px solid var(--border); border-radius: 10px; padding: 9px 11px; font-size: 13.5px; margin-bottom: 14px; background: var(--white); color: var(--text-primary); font-family: inherit; }
+
+  .status-strip { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+  .progress-track { height: 5px; background: var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 6px; transition: width 0.6s ease; }
+  .progress-caption { font-size: 11.5px; color: var(--text-muted); margin-bottom: 22px; }
+
+  .section-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+  .heatmap-wrap { overflow-x: auto; margin-bottom: 22px; padding-bottom: 4px; }
+  .heatmap-grid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 11px); gap: 3px; width: max-content; }
+  .heat-cell { width: 11px; height: 11px; border-radius: 3px; }
+  .stats-row { display: flex; gap: 10px; }
+  .stat-card { flex: 1; background: var(--white); border: 0.5px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+  .stat-num { font-size: 17px; font-weight: 600; margin-bottom: 2px; }
+  .stat-label { font-size: 11px; color: var(--text-secondary); }
+
+  .footer-links { text-align: center; margin-top: 18px; }
+  .text-link { font-size: 11px; color: var(--text-muted); background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; }
+  .footer-sep { font-size: 11px; color: var(--text-muted); margin: 0 6px; }
+
+  button { font-family: inherit; cursor: pointer; }
+  .btn-primary { background: var(--accent); color: var(--white); border: none; border-radius: 14px; padding: 13px; font-size: 14.5px; font-weight: 600; }
+  .btn-secondary { background: transparent; color: var(--text-secondary); border: 0.5px solid var(--border); border-radius: 14px; padding: 11px; font-size: 13px; font-weight: 500; }
+
+  .overlay { position: absolute; inset: 0; background: rgba(30,28,20,0.32); display: none; align-items: flex-end; justify-content: center; z-index: 5; }
+  .overlay.open { display: flex; }
+  .sheet { width: 100%; background: var(--bg-app); border-radius: 24px 24px 0 0; padding: 10px 24px 26px; max-height: 88%; overflow-y: auto; }
+  .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 18px; }
+  .bridge-title { font-size: 17px; font-weight: 600; text-align: center; margin-bottom: 10px; }
+  .bridge-body { font-size: 13.5px; color: var(--text-secondary); text-align: center; line-height: 1.8; margin-bottom: 22px; }
+  .skip-link { font-size: 12.5px; color: var(--text-muted); text-align: center; background: none; border: none; width: 100%; font-family: inherit; cursor: pointer; }
+  .confirm-wrap { text-align: center; padding: 6px 0 4px; }
+  .confirm-title { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .confirm-delta { font-size: 14px; color: var(--accent-text); margin-bottom: 6px; }
+  .confirm-note { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 22px; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone">
+    <div class="scroll">
+      <div class="brand-row">
+        <span class="brand-name">預金クエスト</span>
+        <span class="brand-tagline">何度でも、ここから。</span>
+      </div>
+
+      <div class="hero" id="hero"></div>
+
+      <div class="status-strip" id="etaStrip">-</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-caption" id="progressCaption">-</div>
+
+      <div class="section-label">記録</div>
+      <div class="heatmap-wrap"><div class="heatmap-grid" id="heatmapGrid"></div></div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num" id="statCount">-</div>
+          <div class="stat-label">記録した回数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statDays">-</div>
+          <div class="stat-label">続けてきた日数</div>
+        </div>
+      </div>
+
+      <div class="footer-links">
+        <button class="text-link" id="undoLastBtn">直前の記録を取り消す</button>
+        <span class="footer-sep">・</span>
+        <button class="text-link" id="exportBtn">書き出す</button>
+        <span class="footer-sep">・</span>
+        <label class="text-link" id="importLabel" for="importFile">読み込む</label>
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+      </div>
+    </div>
+
+    <div class="overlay" id="overlay">
+      <div class="sheet" id="sheet"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var GOAL = 1000000;
+  var TAGS = ['外出ついで', '財布に余っていた', '給料日', '我慢できた', 'なんとなく'];
+  var QUICK_AMOUNTS = [100, 500, 1000, 3000];
+  var TEMPT_AMOUNTS = [300, 500, 800, 1500];
+
+  var STORAGE_KEY = 'yokinquest_history_v1';
+  var history = loadHistory();
+  var mode = 'save';
+  var forceInput = false;
+  var saveAmount = 500;
+  var saveTag = null;
+  var temptAmount = 0;
+  var temptItem = '';
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function dateKey(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function startOfDay(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+  function fmtYen(n) { return '¥' + Math.round(n).toLocaleString('ja-JP'); }
+  function fmtDateLong(d) { return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日'; }
+
+  function loadHistory() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return parsed.map(function (e) { return { date: new Date(e.date), amount: e.amount, tag: e.tag || null }; });
+    } catch (e) { return []; }
+  }
+
+  function saveHistory() {
+    try {
+      var serializable = history.map(function (e) { return { date: e.date.toISOString(), amount: e.amount, tag: e.tag }; });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializable));
+    } catch (e) { /* storage unavailable; data stays in memory for this session only */ }
+  }
+
+  function computeStats(hist) {
+    if (hist.length === 0) {
+      return { total: 0, count: 0, daysElapsed: 1, rate: 0, remaining: GOAL, remainingDays: Infinity };
+    }
+    var total = 0, firstDate = hist[0].date;
+    for (var i = 0; i < hist.length; i++) {
+      total += hist[i].amount;
+      if (hist[i].date < firstDate) firstDate = hist[i].date;
+    }
+    var today = startOfDay(new Date());
+    var daysElapsed = Math.max(1, Math.round((today - firstDate) / 86400000) + 1);
+    var rate = total / daysElapsed;
+    var remaining = Math.max(0, GOAL - total);
+    var remainingDays = rate > 0 ? remaining / rate : Infinity;
+    return { total: total, count: hist.length, daysElapsed: daysElapsed, rate: rate, remaining: remaining, remainingDays: remainingDays };
+  }
+
+  function formatDelta(deltaDays) {
+    if (!isFinite(deltaDays) || deltaDays <= 0) return null;
+    if (deltaDays < 1) {
+      var hours = Math.max(1, Math.round(deltaDays * 24));
+      return { value: hours, unit: '時間' };
+    }
+    var days = deltaDays >= 10 ? Math.round(deltaDays) : Math.round(deltaDays * 10) / 10;
+    return { value: days, unit: '日' };
+  }
+
+  function previewDelta(amount) {
+    if (!amount || amount <= 0) return null;
+    var before = computeStats(history);
+    if (before.remainingDays === Infinity) return null;
+    if (before.count < 2) return null;
+    var hyp = history.concat([{ date: startOfDay(new Date()), amount: amount, tag: null }]);
+    var after = computeStats(hyp);
+    var deltaDays = before.remainingDays - after.remainingDays;
+    return formatDelta(deltaDays);
+  }
+
+  function heatColor(amount) {
+    if (!amount) return 'var(--heat-0)';
+    if (amount < 400) return 'var(--heat-1)';
+    if (amount < 900) return 'var(--heat-2)';
+    if (amount < 2000) return 'var(--heat-3)';
+    return 'var(--heat-4)';
+  }
+
+  function buildHeatmapCells(hist) {
+    var map = {};
+    hist.forEach(function (e) { var k = dateKey(e.date); map[k] = (map[k] || 0) + e.amount; });
+    var totalDays = 140;
+    var start = startOfDay(new Date());
+    start.setDate(start.getDate() - totalDays);
+    start.setDate(start.getDate() - start.getDay());
+    var end = startOfDay(new Date());
+    var cells = [];
+    var cur = new Date(start);
+    while (cur <= end) {
+      var k = dateKey(cur);
+      cells.push({ date: new Date(cur), amount: map[k] || 0 });
+      cur.setDate(cur.getDate() + 1);
+    }
+    return cells;
+  }
+
+  function renderHeatmap() {
+    var grid = document.getElementById('heatmapGrid');
+    var cells = buildHeatmapCells(history);
+    grid.innerHTML = '';
+    cells.forEach(function (c) {
+      var div = document.createElement('div');
+      div.className = 'heat-cell';
+      div.style.background = heatColor(c.amount);
+      div.title = fmtDateLong(c.date) + (c.amount ? '　' + fmtYen(c.amount) : '');
+      grid.appendChild(div);
+    });
+    grid.parentElement.scrollLeft = grid.scrollWidth;
+  }
+
+  function daysSinceLastEntry() {
+    if (history.length === 0) return null;
+    var last = history[0].date;
+    history.forEach(function (e) { if (e.date > last) last = e.date; });
+    return Math.round((startOfDay(new Date()) - last) / 86400000);
+  }
+
+  function hasRecordedToday() {
+    var todayKey = dateKey(startOfDay(new Date()));
+    return history.some(function (e) { return dateKey(e.date) === todayKey; });
+  }
+
+  function hoursUntilMidnight() {
+    var now = new Date();
+    var midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0);
+    return Math.max(1, Math.round((midnight - now) / 3600000));
+  }
+
+  function contextualLine() {
+    var gap = daysSinceLastEntry();
+    if (gap !== null && gap >= 4) return 'しばらくぶりですね。今日から、また始められます。';
+    var h = new Date().getHours();
+    if (h < 11) return '今日、外出の予定はありますか。';
+    if (h < 18) return '帰り道に、少しだけ。';
+    return '今日を終える前に。';
+  }
+
+  function renderTopStats() {
+    var stats = computeStats(history);
+    var etaStrip = document.getElementById('etaStrip');
+    if (stats.remainingDays === Infinity) {
+      etaStrip.textContent = '生活防衛資金 100万円・まだ記録がありません';
+    } else if (stats.remaining <= 0) {
+      etaStrip.textContent = '生活防衛資金 100万円・達成しました';
+    } else if (stats.count < 3) {
+      etaStrip.textContent = 'あと数回記録すると、達成予測日が見えてきます。';
+    } else {
+      var eta = new Date();
+      eta.setDate(eta.getDate() + Math.ceil(stats.remainingDays));
+      etaStrip.textContent = '達成予測日　' + fmtDateLong(eta) + 'ごろ';
+    }
+    var pct = Math.min(100, (stats.total / GOAL) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressCaption').textContent = fmtYen(stats.total) + ' / ' + fmtYen(GOAL);
+    document.getElementById('statCount').textContent = stats.count + '回';
+    document.getElementById('statDays').textContent = stats.daysElapsed + '日目';
+    renderHeatmap();
+    return stats;
+  }
+
+  function chipsHtml(list, selected, cls) {
+    return list.map(function (a) {
+      var sel = a === selected ? ' selected' : '';
+      return '<button class="chip ' + cls + '" data-amount="' + a + '"' + (a === selected ? ' aria-pressed="true"' : '') + ' style="' + (sel ? '' : '') + '">' + fmtYen(a) + '</button>';
+    }).join('');
+  }
+
+  function tagChipsHtml(selected) {
+    return TAGS.map(function (t) {
+      var sel = t === selected ? ' selected' : '';
+      return '<button class="chip tag-chip' + sel + '" data-tag="' + t + '">' + t + '</button>';
+    }).join('');
+  }
+
+  function renderHero() {
+    var hero = document.getElementById('hero');
+    if (hasRecordedToday() && !forceInput) {
+      var todayTotal = 0;
+      var todayKey = dateKey(startOfDay(new Date()));
+      history.forEach(function (e) { if (dateKey(e.date) === todayKey) todayTotal += e.amount; });
+      hero.innerHTML = ''
+        + '<div class="done-wrap">'
+        + '<div class="done-title">今日はもう、進めました。</div>'
+        + '<div class="done-sub">今日の記録　' + fmtYen(todayTotal) + '</div>'
+        + '<button class="more-link" id="addMoreBtn">もう一歩、加える</button>'
+        + '</div>';
+      document.getElementById('addMoreBtn').addEventListener('click', function () { forceInput = true; mode = 'save'; renderHero(); });
+      return;
+    }
+
+    var isSave = (mode === 'save');
+    var html = ''
+      + '<div class="hero-context">' + contextualLine() + '</div>'
+      + '<div class="tabs">'
+      + '<button class="tab' + (isSave ? ' active' : '') + '" id="tabSave">たまる</button>'
+      + '<button class="tab' + (!isSave ? ' active' : '') + '" id="tabTempt">まよう</button>'
+      + '</div>';
+
+    if (isSave) {
+      html += ''
+        + '<div class="amount-big" id="saveAmountBig">' + fmtYen(saveAmount) + '</div>'
+        + '<div class="slider-row"><input type="range" id="saveSlider" min="0" max="5000" step="100" value="' + saveAmount + '"></div>'
+        + '<div class="quick-chips" id="saveChips">' + chipsHtml(QUICK_AMOUNTS, saveAmount, 'amt-chip') + '</div>'
+        + '<div class="tag-row" id="saveTags">' + tagChipsHtml(saveTag) + '</div>'
+        + '<div class="preview-line" id="savePreview"></div>'
+        + '<button class="btn-primary hero-cta" id="saveGo">まわす</button>'
+        + '<div class="hero-footer" id="heroFooter"></div>';
+    } else {
+      html += ''
+        + '<input class="custom-input" id="temptItem" type="text" placeholder="何に使う予定でしたか(任意)" value="' + temptItem + '">'
+        + '<div class="quick-chips" id="temptChips">' + chipsHtml(TEMPT_AMOUNTS, temptAmount, 'temptAmt-chip') + '</div>'
+        + '<input class="custom-input" id="temptCustom" type="number" inputmode="numeric" placeholder="その他の金額">'
+        + '<div class="preview-line" id="temptPreview"></div>'
+        + '<button class="btn-primary hero-cta" id="temptGo" style="margin-bottom:8px;">まわす</button>'
+        + '<button class="btn-secondary hero-cta" id="temptBuy">今回は買う</button>';
+    }
+
+    hero.innerHTML = html;
+
+    if (isSave) {
+      updateSavePreview();
+      document.getElementById('saveSlider').addEventListener('input', function (e) {
+        saveAmount = parseInt(e.target.value, 10);
+        document.getElementById('saveAmountBig').textContent = fmtYen(saveAmount);
+        document.querySelectorAll('.amt-chip').forEach(function (b) {
+          b.classList.toggle('selected', parseInt(b.getAttribute('data-amount'), 10) === saveAmount);
+        });
+        updateSavePreview();
+      });
+      document.querySelectorAll('.amt-chip').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          saveAmount = parseInt(btn.getAttribute('data-amount'), 10);
+          document.getElementById('saveSlider').value = saveAmount;
+          document.getElementById('saveAmountBig').textContent = fmtYen(saveAmount);
+          document.querySelectorAll('.amt-chip').forEach(function (b) { b.classList.remove('selected'); });
+          btn.classList.add('selected');
+          updateSavePreview();
+        });
+      });
+      document.querySelectorAll('.tag-chip').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var t = btn.getAttribute('data-tag');
+          saveTag = (saveTag === t) ? null : t;
+          document.querySelectorAll('.tag-chip').forEach(function (b) { b.classList.remove('selected'); });
+          if (saveTag) btn.classList.add('selected');
+        });
+      });
+      document.getElementById('saveGo').addEventListener('click', function () {
+        if (saveAmount > 0) openBridge(saveAmount, saveTag);
+      });
+      var footer = document.getElementById('heroFooter');
+      if (!hasRecordedToday()) footer.textContent = '今日はあと' + hoursUntilMidnight() + '時間です。';
+      document.getElementById('tabTempt').addEventListener('click', function () { mode = 'tempt'; renderHero(); });
+    } else {
+      updateTemptPreview();
+      document.querySelectorAll('.temptAmt-chip').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          temptAmount = parseInt(btn.getAttribute('data-amount'), 10);
+          document.getElementById('temptCustom').value = '';
+          document.querySelectorAll('.temptAmt-chip').forEach(function (b) { b.classList.remove('selected'); });
+          btn.classList.add('selected');
+          updateTemptPreview();
+        });
+      });
+      document.getElementById('temptCustom').addEventListener('input', function (e) {
+        var v = parseInt(e.target.value, 10);
+        if (!isNaN(v) && v > 0) {
+          temptAmount = v;
+          document.querySelectorAll('.temptAmt-chip').forEach(function (b) { b.classList.remove('selected'); });
+          updateTemptPreview();
+        }
+      });
+      document.getElementById('temptItem').addEventListener('input', function (e) { temptItem = e.target.value; });
+      document.getElementById('temptGo').addEventListener('click', function () {
+        if (temptAmount > 0) openBridge(temptAmount, '誘惑を変換');
+      });
+      document.getElementById('temptBuy').addEventListener('click', function () {
+        mode = 'save';
+        temptAmount = 0;
+        renderHero();
+      });
+      document.getElementById('tabSave').addEventListener('click', function () { mode = 'save'; renderHero(); });
+    }
+  }
+
+  function updateSavePreview() {
+    var el = document.getElementById('savePreview');
+    var d = previewDelta(saveAmount);
+    if (!saveAmount) { el.textContent = '金額を選ぶと、変化がわかります。'; return; }
+    if (!d) { el.textContent = fmtYen(saveAmount) + '　まわします。'; return; }
+    el.textContent = fmtYen(saveAmount) + ' → 達成予測日が ' + d.value + d.unit + ' 縮まります。';
+  }
+
+  function updateTemptPreview() {
+    var el = document.getElementById('temptPreview');
+    var d = previewDelta(temptAmount);
+    if (!temptAmount) { el.textContent = '金額を選ぶと、達成予測日への影響がわかります。'; return; }
+    if (!d) { el.textContent = fmtYen(temptAmount) + '　防衛資金にまわせます。'; return; }
+    el.textContent = 'これを防衛資金にまわすと、達成予測日が約 ' + d.value + d.unit + ' 早まります。';
+  }
+
+  function openOverlay(html) {
+    document.getElementById('sheet').innerHTML = html;
+    document.getElementById('overlay').classList.add('open');
+  }
+  function closeOverlay() { document.getElementById('overlay').classList.remove('open'); }
+
+  function openBridge(amount, tag) {
+    var html = ''
+      + '<div class="sheet-handle"></div>'
+      + '<div class="bridge-title">' + fmtYen(amount) + 'を、防衛資金へ。</div>'
+      + '<div class="bridge-body">口座やATMから、実際に移してきてください。<br>戻ってきたら教えてください。</div>'
+      + '<button class="btn-primary" id="confirmMoved" style="width:100%; margin-bottom:10px;">移しました</button>'
+      + '<button class="skip-link" id="cancelMove">やめておく</button>';
+    openOverlay(html);
+    document.getElementById('confirmMoved').addEventListener('click', function () { commitEntry(amount, tag); });
+    document.getElementById('cancelMove').addEventListener('click', closeOverlay);
+  }
+
+  function commitEntry(amount, tag) {
+    var before = computeStats(history);
+    history.push({ date: startOfDay(new Date()), amount: amount, tag: tag });
+    saveHistory();
+    var after = computeStats(history);
+    var deltaDays = (before.remainingDays === Infinity) ? 0 : (before.remainingDays - after.remainingDays);
+    var d = formatDelta(deltaDays);
+    var deltaText = d ? ('達成予測日が ' + d.value + d.unit + ' 縮みました。') : '記録が、また一つ増えました。';
+
+    saveAmount = 500; saveTag = null; temptAmount = 0; temptItem = ''; mode = 'save'; forceInput = false;
+    renderTopStats();
+    renderHero();
+
+    var html = ''
+      + '<div class="sheet-handle"></div>'
+      + '<div class="confirm-wrap">'
+      + '<div class="confirm-title">記録しました。</div>'
+      + '<div class="confirm-delta">' + deltaText + '</div>'
+      + '<div class="confirm-note">今日も、少し進みました。</div>'
+      + '<button class="btn-primary" id="closeConfirm" style="width:100%;">とじる</button>'
+      + '</div>';
+    openOverlay(html);
+    document.getElementById('closeConfirm').addEventListener('click', closeOverlay);
+  }
+
+  function undoLast() {
+    if (history.length === 0) return;
+    if (!window.confirm('直前の記録を取り消しますか。')) return;
+    var lastIdx = 0;
+    for (var i = 1; i < history.length; i++) { if (history[i].date > history[lastIdx].date) lastIdx = i; }
+    history.splice(lastIdx, 1);
+    saveHistory();
+    forceInput = false;
+    renderTopStats();
+    renderHero();
+  }
+
+  function exportData() {
+    var serializable = history.map(function (e) { return { date: e.date.toISOString(), amount: e.amount, tag: e.tag }; });
+    var blob = new Blob([JSON.stringify(serializable, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'yokinquest_backup_' + dateKey(new Date()) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(file) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        var parsed = JSON.parse(e.target.result);
+        var next = parsed.map(function (item) { return { date: new Date(item.date), amount: item.amount, tag: item.tag || null }; });
+        if (!window.confirm('現在の記録を、読み込んだバックアップで置き換えますか。')) return;
+        history = next;
+        saveHistory();
+        forceInput = false;
+        mode = 'save';
+        renderTopStats();
+        renderHero();
+      } catch (err) {
+        window.alert('読み込めませんでした。ファイルを確認してください。');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  document.getElementById('overlay').addEventListener('click', function (e) {
+    if (e.target.id === 'overlay') closeOverlay();
+  });
+  document.getElementById('undoLastBtn').addEventListener('click', undoLast);
+  document.getElementById('exportBtn').addEventListener('click', exportData);
+  document.getElementById('importFile').addEventListener('change', function (e) {
+    if (e.target.files && e.target.files[0]) importData(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  renderTopStats();
+  renderHero();
+})();
+</script>
+</body>
+</html>
