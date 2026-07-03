@@ -12,7 +12,6 @@
 <style>
   :root{
     --bg-app: #F5F1E8;
-    --bg-outer: #E9E4D8;
     --text-primary: #2B2A26;
     --text-secondary: #8A8375;
     --text-muted: #B3AC9C;
@@ -30,21 +29,35 @@
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0;
-    background: var(--bg-outer);
+    height: 100%;
+    background: var(--bg-app);
     font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--text-primary);
+    overscroll-behavior: none;
   }
-  .stage { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
   .phone {
-    width: 390px; max-width: 100%; height: 820px;
-    background: var(--bg-app); border-radius: 36px;
-    box-shadow: 0 24px 60px rgba(30,28,20,0.18);
+    width: 100%;
+    height: 100vh; height: 100dvh;
+    background: var(--bg-app);
     overflow: hidden; position: relative; display: flex; flex-direction: column;
   }
-  .scroll { flex: 1; overflow-y: auto; padding: 26px 22px 30px; }
+  .scroll {
+    flex: 1; overflow-y: auto;
+    padding: calc(20px + env(safe-area-inset-top, 0px)) 22px calc(30px + env(safe-area-inset-bottom, 0px));
+  }
   .brand-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
   .brand-name { font-size: 14px; font-weight: 600; }
   .brand-tagline { font-size: 11px; color: var(--text-muted); }
+
+  .balance-block { margin-bottom: 18px; }
+  .balance-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .balance-num { font-size: 34px; font-weight: 600; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .balance-sub { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 10px; }
+  .progress-track { height: 6px; background: var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 8px; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 6px; transition: width 0.6s ease; }
+  .eta-line { font-size: 12.5px; color: var(--text-secondary); }
+  .planned-tag { color: var(--text-muted); }
+  .edit-goal-link { font-size: 11px; color: var(--text-muted); background: none; border: none; text-decoration: underline; font-family: inherit; cursor: pointer; padding: 0; margin-top: 6px; }
 
   .hero { background: var(--white); border: 0.5px solid var(--border); border-radius: 18px; padding: 20px 18px; margin-bottom: 18px; }
   .hero-context { font-size: 13px; color: var(--text-secondary); text-align: center; margin-bottom: 14px; line-height: 1.6; }
@@ -67,16 +80,13 @@
   .hero-footer { font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 14px; }
 
   .done-wrap { text-align: center; padding: 6px 0; }
-  .done-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
-  .done-sub { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 14px; }
+  .done-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+  .done-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; }
+  .done-today-num { font-size: 24px; font-weight: 600; color: var(--accent-text); margin-bottom: 14px; }
   .more-link { font-size: 12.5px; color: var(--accent-text); background: none; border: none; font-family: inherit; cursor: pointer; text-decoration: underline; }
 
   .custom-input { width: 100%; border: 0.5px solid var(--border); border-radius: 10px; padding: 9px 11px; font-size: 13.5px; margin-bottom: 14px; background: var(--white); color: var(--text-primary); font-family: inherit; }
-
-  .status-strip { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
-  .progress-track { height: 5px; background: var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
-  .progress-fill { height: 100%; background: var(--accent); border-radius: 6px; transition: width 0.6s ease; }
-  .progress-caption { font-size: 11.5px; color: var(--text-muted); margin-bottom: 22px; }
+  .setup-label { font-size: 12px; color: var(--text-secondary); margin: 4px 0 6px; }
 
   .section-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
   .heatmap-wrap { overflow-x: auto; margin-bottom: 22px; padding-bottom: 4px; }
@@ -87,9 +97,8 @@
   .stat-num { font-size: 17px; font-weight: 600; margin-bottom: 2px; }
   .stat-label { font-size: 11px; color: var(--text-secondary); }
 
-  .footer-links { text-align: center; margin-top: 18px; }
-  .text-link { font-size: 11px; color: var(--text-muted); background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; }
-  .footer-sep { font-size: 11px; color: var(--text-muted); margin: 0 6px; }
+  .footer-links { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 14px; margin-top: 18px; }
+  .text-link { font-size: 11px; color: var(--text-muted); background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; text-decoration: underline; }
 
   button { font-family: inherit; cursor: pointer; }
   .btn-primary { background: var(--accent); color: var(--white); border: none; border-radius: 14px; padding: 13px; font-size: 14.5px; font-weight: 600; }
@@ -97,7 +106,7 @@
 
   .overlay { position: absolute; inset: 0; background: rgba(30,28,20,0.32); display: none; align-items: flex-end; justify-content: center; z-index: 5; }
   .overlay.open { display: flex; }
-  .sheet { width: 100%; background: var(--bg-app); border-radius: 24px 24px 0 0; padding: 10px 24px 26px; max-height: 88%; overflow-y: auto; }
+  .sheet { width: 100%; background: var(--bg-app); border-radius: 24px 24px 0 0; padding: 10px 24px calc(26px + env(safe-area-inset-bottom, 0px)); max-height: 88%; overflow-y: auto; }
   .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 18px; }
   .bridge-title { font-size: 17px; font-weight: 600; text-align: center; margin-bottom: 10px; }
   .bridge-body { font-size: 13.5px; color: var(--text-secondary); text-align: center; line-height: 1.8; margin-bottom: 22px; }
@@ -109,7 +118,6 @@
 </style>
 </head>
 <body>
-<div class="stage">
   <div class="phone">
     <div class="scroll">
       <div class="brand-row">
@@ -117,11 +125,16 @@
         <span class="brand-tagline">何度でも、ここから。</span>
       </div>
 
-      <div class="hero" id="hero"></div>
+      <div class="balance-block">
+        <div class="balance-label">防衛資金</div>
+        <div class="balance-num" id="balanceNum">-</div>
+        <div class="balance-sub" id="balanceSub">-</div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <div class="eta-line" id="etaStrip">-</div>
+        <button class="edit-goal-link" id="editGoalBtn">目標を設定し直す</button>
+      </div>
 
-      <div class="status-strip" id="etaStrip">-</div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-      <div class="progress-caption" id="progressCaption">-</div>
+      <div class="hero" id="hero"></div>
 
       <div class="section-label">記録</div>
       <div class="heatmap-wrap"><div class="heatmap-grid" id="heatmapGrid"></div></div>
@@ -139,9 +152,7 @@
 
       <div class="footer-links">
         <button class="text-link" id="undoLastBtn">直前の記録を取り消す</button>
-        <span class="footer-sep">・</span>
         <button class="text-link" id="exportBtn">書き出す</button>
-        <span class="footer-sep">・</span>
         <label class="text-link" id="importLabel" for="importFile">読み込む</label>
         <input type="file" id="importFile" accept="application/json" style="display:none;">
       </div>
@@ -151,33 +162,63 @@
       <div class="sheet" id="sheet"></div>
     </div>
   </div>
-</div>
 
 <script>
 (function () {
-  var GOAL = 1000000;
+  var HISTORY_KEY = 'yokinquest_history_v1';
+  var SETTINGS_KEY = 'yokinquest_settings_v1';
   var TAGS = ['外出ついで', '財布に余っていた', '給料日', '我慢できた', 'なんとなく'];
   var QUICK_AMOUNTS = [100, 500, 1000, 3000];
   var TEMPT_AMOUNTS = [300, 500, 800, 1500];
 
-  var STORAGE_KEY = 'yokinquest_history_v1';
+  var isFirstRun = !localStorage.getItem(SETTINGS_KEY);
   var history = loadHistory();
+  var settings = loadSettings();
   var mode = 'save';
   var forceInput = false;
   var saveAmount = 500;
   var saveTag = null;
   var temptAmount = 0;
   var temptItem = '';
+  var setupTargetMode = settings.targetMode;
 
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
   function dateKey(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function startOfDay(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
   function fmtYen(n) { return '¥' + Math.round(n).toLocaleString('ja-JP'); }
   function fmtDateLong(d) { return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日'; }
+  function fmtDateInput(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+
+  function defaultSettings() {
+    var oneYear = new Date(); oneYear.setFullYear(oneYear.getFullYear() + 1);
+    return {
+      goalAmount: 1000000,
+      startingBalance: 0,
+      startDate: startOfDay(new Date()).toISOString(),
+      targetMode: 'pace',
+      monthlyTarget: 10000,
+      targetDate: fmtDateInput(oneYear)
+    };
+  }
+
+  function loadSettings() {
+    try {
+      var raw = localStorage.getItem(SETTINGS_KEY);
+      if (!raw) return defaultSettings();
+      var parsed = JSON.parse(raw);
+      var d = defaultSettings();
+      for (var k in d) { if (!(k in parsed)) parsed[k] = d[k]; }
+      return parsed;
+    } catch (e) { return defaultSettings(); }
+  }
+
+  function saveSettings() {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) { /* ignore */ }
+  }
 
   function loadHistory() {
     try {
-      var raw = localStorage.getItem(STORAGE_KEY);
+      var raw = localStorage.getItem(HISTORY_KEY);
       if (!raw) return [];
       var parsed = JSON.parse(raw);
       return parsed.map(function (e) { return { date: new Date(e.date), amount: e.amount, tag: e.tag || null }; });
@@ -187,25 +228,35 @@
   function saveHistory() {
     try {
       var serializable = history.map(function (e) { return { date: e.date.toISOString(), amount: e.amount, tag: e.tag }; });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializable));
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(serializable));
     } catch (e) { /* storage unavailable; data stays in memory for this session only */ }
   }
 
+  function plannedDailyRate() {
+    if (settings.targetMode === 'date' && settings.targetDate) {
+      var start = startOfDay(new Date(settings.startDate));
+      var target = startOfDay(new Date(settings.targetDate));
+      var days = Math.max(1, Math.round((target - start) / 86400000));
+      return Math.max(0, settings.goalAmount - settings.startingBalance) / days;
+    }
+    return Math.max(0, settings.monthlyTarget || 0) / 30;
+  }
+
   function computeStats(hist) {
-    if (hist.length === 0) {
-      return { total: 0, count: 0, daysElapsed: 1, rate: 0, remaining: GOAL, remainingDays: Infinity };
-    }
-    var total = 0, firstDate = hist[0].date;
-    for (var i = 0; i < hist.length; i++) {
-      total += hist[i].amount;
-      if (hist[i].date < firstDate) firstDate = hist[i].date;
-    }
+    var total = settings.startingBalance;
+    for (var i = 0; i < hist.length; i++) total += hist[i].amount;
     var today = startOfDay(new Date());
-    var daysElapsed = Math.max(1, Math.round((today - firstDate) / 86400000) + 1);
-    var rate = total / daysElapsed;
-    var remaining = Math.max(0, GOAL - total);
+    var start = startOfDay(new Date(settings.startDate));
+    var daysElapsed = Math.max(1, Math.round((today - start) / 86400000) + 1);
+    var actualSaved = total - settings.startingBalance;
+    var actualRate = actualSaved / daysElapsed;
+    var planned = plannedDailyRate();
+    var usingPlanned = hist.length < 3;
+    var rate = usingPlanned ? planned : actualRate;
+    if (!(rate > 0)) rate = planned;
+    var remaining = Math.max(0, settings.goalAmount - total);
     var remainingDays = rate > 0 ? remaining / rate : Infinity;
-    return { total: total, count: hist.length, daysElapsed: daysElapsed, rate: rate, remaining: remaining, remainingDays: remainingDays };
+    return { total: total, count: hist.length, daysElapsed: daysElapsed, rate: rate, remaining: remaining, remainingDays: remainingDays, usingPlanned: usingPlanned };
   }
 
   function formatDelta(deltaDays) {
@@ -221,8 +272,7 @@
   function previewDelta(amount) {
     if (!amount || amount <= 0) return null;
     var before = computeStats(history);
-    if (before.remainingDays === Infinity) return null;
-    if (before.count < 2) return null;
+    if (!(before.rate > 0)) return null;
     var hyp = history.concat([{ date: startOfDay(new Date()), amount: amount, tag: null }]);
     var after = computeStats(hyp);
     var deltaDays = before.remainingDays - after.remainingDays;
@@ -299,21 +349,25 @@
 
   function renderTopStats() {
     var stats = computeStats(history);
+    document.getElementById('balanceNum').textContent = fmtYen(stats.total);
+    if (stats.remaining <= 0) {
+      document.getElementById('balanceSub').textContent = '目標 ' + fmtYen(settings.goalAmount) + ' を達成しました';
+    } else {
+      document.getElementById('balanceSub').textContent = '目標 ' + fmtYen(settings.goalAmount) + ' まで、あと ' + fmtYen(stats.remaining);
+    }
+    var pct = Math.min(100, (stats.total / settings.goalAmount) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+
     var etaStrip = document.getElementById('etaStrip');
-    if (stats.remainingDays === Infinity) {
-      etaStrip.textContent = '生活防衛資金 100万円・まだ記録がありません';
-    } else if (stats.remaining <= 0) {
-      etaStrip.textContent = '生活防衛資金 100万円・達成しました';
-    } else if (stats.count < 3) {
-      etaStrip.textContent = 'あと数回記録すると、達成予測日が見えてきます。';
+    if (stats.remaining <= 0) {
+      etaStrip.innerHTML = '達成しました。次の目標を決めましょう。';
     } else {
       var eta = new Date();
       eta.setDate(eta.getDate() + Math.ceil(stats.remainingDays));
-      etaStrip.textContent = '達成予測日　' + fmtDateLong(eta) + 'ごろ';
+      var tag = stats.usingPlanned ? '　<span class="planned-tag">(設定したペースより)</span>' : '';
+      etaStrip.innerHTML = '達成予測日　' + fmtDateLong(eta) + 'ごろ' + tag;
     }
-    var pct = Math.min(100, (stats.total / GOAL) * 100);
-    document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('progressCaption').textContent = fmtYen(stats.total) + ' / ' + fmtYen(GOAL);
+
     document.getElementById('statCount').textContent = stats.count + '回';
     document.getElementById('statDays').textContent = stats.daysElapsed + '日目';
     renderHeatmap();
@@ -323,7 +377,7 @@
   function chipsHtml(list, selected, cls) {
     return list.map(function (a) {
       var sel = a === selected ? ' selected' : '';
-      return '<button class="chip ' + cls + '" data-amount="' + a + '"' + (a === selected ? ' aria-pressed="true"' : '') + ' style="' + (sel ? '' : '') + '">' + fmtYen(a) + '</button>';
+      return '<button class="chip ' + cls + sel + '" data-amount="' + a + '">' + fmtYen(a) + '</button>';
     }).join('');
   }
 
@@ -343,7 +397,8 @@
       hero.innerHTML = ''
         + '<div class="done-wrap">'
         + '<div class="done-title">今日はもう、進めました。</div>'
-        + '<div class="done-sub">今日の記録　' + fmtYen(todayTotal) + '</div>'
+        + '<div class="done-label">今日の記録</div>'
+        + '<div class="done-today-num">' + fmtYen(todayTotal) + '</div>'
         + '<button class="more-link" id="addMoreBtn">もう一歩、加える</button>'
         + '</div>';
       document.getElementById('addMoreBtn').addEventListener('click', function () { forceInput = true; mode = 'save'; renderHero(); });
@@ -484,7 +539,7 @@
     history.push({ date: startOfDay(new Date()), amount: amount, tag: tag });
     saveHistory();
     var after = computeStats(history);
-    var deltaDays = (before.remainingDays === Infinity) ? 0 : (before.remainingDays - after.remainingDays);
+    var deltaDays = (before.rate > 0) ? (before.remainingDays - after.remainingDays) : 0;
     var d = formatDelta(deltaDays);
     var deltaText = d ? ('達成予測日が ' + d.value + d.unit + ' 縮みました。') : '記録が、また一つ増えました。';
 
@@ -517,8 +572,11 @@
   }
 
   function exportData() {
-    var serializable = history.map(function (e) { return { date: e.date.toISOString(), amount: e.amount, tag: e.tag }; });
-    var blob = new Blob([JSON.stringify(serializable, null, 2)], { type: 'application/json' });
+    var payload = {
+      settings: settings,
+      history: history.map(function (e) { return { date: e.date.toISOString(), amount: e.amount, tag: e.tag }; })
+    };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
@@ -534,9 +592,10 @@
     reader.onload = function (e) {
       try {
         var parsed = JSON.parse(e.target.result);
-        var next = parsed.map(function (item) { return { date: new Date(item.date), amount: item.amount, tag: item.tag || null }; });
+        var nextHistory = (parsed.history || parsed).map(function (item) { return { date: new Date(item.date), amount: item.amount, tag: item.tag || null }; });
         if (!window.confirm('現在の記録を、読み込んだバックアップで置き換えますか。')) return;
-        history = next;
+        history = nextHistory;
+        if (parsed.settings) { settings = parsed.settings; saveSettings(); }
         saveHistory();
         forceInput = false;
         mode = 'save';
@@ -549,11 +608,90 @@
     reader.readAsText(file);
   }
 
+  function setupPreviewText() {
+    var goal = parseInt(document.getElementById('setupGoal').value, 10) || 0;
+    var start = parseInt(document.getElementById('setupStart').value, 10) || 0;
+    var remaining = Math.max(0, goal - start);
+    if (setupTargetMode === 'pace') {
+      var monthly = parseInt(document.getElementById('setupMonthly').value, 10) || 0;
+      if (monthly <= 0) return '月々の目標額を入力してください。';
+      var months = remaining / monthly;
+      var d = new Date(); d.setDate(d.getDate() + Math.ceil(months * 30));
+      return '月々' + fmtYen(monthly) + 'のペースだと、達成予測日は ' + fmtDateLong(d) + ' ごろです。';
+    } else {
+      var dateVal = document.getElementById('setupDate').value;
+      if (!dateVal) return '達成したい日付を選んでください。';
+      var days = Math.max(1, Math.round((new Date(dateVal) - startOfDay(new Date())) / 86400000));
+      var perMonth = remaining / (days / 30);
+      return 'その日までに達成するには、月々 約' + fmtYen(perMonth) + ' のペースが必要です。';
+    }
+  }
+
+  function renderSetupTabs() {
+    document.getElementById('setupTabPace').classList.toggle('active', setupTargetMode === 'pace');
+    document.getElementById('setupTabDate').classList.toggle('active', setupTargetMode === 'date');
+    document.getElementById('setupPaceWrap').style.display = setupTargetMode === 'pace' ? 'block' : 'none';
+    document.getElementById('setupDateWrap').style.display = setupTargetMode === 'date' ? 'block' : 'none';
+    document.getElementById('setupPreview').textContent = setupPreviewText();
+  }
+
+  function openSetupSheet() {
+    setupTargetMode = settings.targetMode;
+    var html = ''
+      + '<div class="sheet-handle"></div>'
+      + '<div class="bridge-title">はじめに、目標を決めましょう</div>'
+      + '<div class="setup-label">目標金額</div>'
+      + '<input class="custom-input" id="setupGoal" type="number" inputmode="numeric" value="' + settings.goalAmount + '">'
+      + '<div class="setup-label">今の防衛資金(すでにあるなら)</div>'
+      + '<input class="custom-input" id="setupStart" type="number" inputmode="numeric" value="' + settings.startingBalance + '">'
+      + '<div class="setup-label">ペースの決め方</div>'
+      + '<div class="tabs">'
+      + '<button class="tab" id="setupTabPace">月々の目標額</button>'
+      + '<button class="tab" id="setupTabDate">達成したい期限</button>'
+      + '</div>'
+      + '<div id="setupPaceWrap">'
+      + '<div class="setup-label">月に、いくら貯めますか</div>'
+      + '<input class="custom-input" id="setupMonthly" type="number" inputmode="numeric" value="' + settings.monthlyTarget + '">'
+      + '</div>'
+      + '<div id="setupDateWrap">'
+      + '<div class="setup-label">いつまでに達成したいですか</div>'
+      + '<input class="custom-input" id="setupDate" type="date" value="' + settings.targetDate + '">'
+      + '</div>'
+      + '<div class="preview-line" id="setupPreview"></div>'
+      + '<button class="btn-primary" id="setupSave" style="width:100%; margin-bottom:8px;">はじめる</button>'
+      + (isFirstRun ? '<button class="skip-link" id="setupSkip">あとで設定する</button>' : '<button class="skip-link" id="setupSkip">やめる</button>');
+    openOverlay(html);
+    renderSetupTabs();
+
+    document.getElementById('setupTabPace').addEventListener('click', function () { setupTargetMode = 'pace'; renderSetupTabs(); });
+    document.getElementById('setupTabDate').addEventListener('click', function () { setupTargetMode = 'date'; renderSetupTabs(); });
+    ['setupGoal', 'setupStart', 'setupMonthly', 'setupDate'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', function () {
+        document.getElementById('setupPreview').textContent = setupPreviewText();
+      });
+    });
+    document.getElementById('setupSave').addEventListener('click', function () {
+      settings.goalAmount = parseInt(document.getElementById('setupGoal').value, 10) || settings.goalAmount;
+      settings.startingBalance = parseInt(document.getElementById('setupStart').value, 10) || 0;
+      settings.targetMode = setupTargetMode;
+      settings.monthlyTarget = parseInt(document.getElementById('setupMonthly').value, 10) || settings.monthlyTarget;
+      var dateVal = document.getElementById('setupDate').value;
+      if (dateVal) settings.targetDate = dateVal;
+      if (isFirstRun) { settings.startDate = startOfDay(new Date()).toISOString(); isFirstRun = false; }
+      saveSettings();
+      closeOverlay();
+      renderTopStats();
+      renderHero();
+    });
+    document.getElementById('setupSkip').addEventListener('click', closeOverlay);
+  }
+
   document.getElementById('overlay').addEventListener('click', function (e) {
     if (e.target.id === 'overlay') closeOverlay();
   });
   document.getElementById('undoLastBtn').addEventListener('click', undoLast);
   document.getElementById('exportBtn').addEventListener('click', exportData);
+  document.getElementById('editGoalBtn').addEventListener('click', openSetupSheet);
   document.getElementById('importFile').addEventListener('change', function (e) {
     if (e.target.files && e.target.files[0]) importData(e.target.files[0]);
     e.target.value = '';
@@ -561,6 +699,7 @@
 
   renderTopStats();
   renderHero();
+  if (isFirstRun) openSetupSheet();
 })();
 </script>
 </body>
